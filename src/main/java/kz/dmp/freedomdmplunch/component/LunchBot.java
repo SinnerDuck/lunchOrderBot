@@ -307,7 +307,11 @@ public class LunchBot extends TelegramLongPollingBot {
             StopPoll stopPoll = new StopPoll();
             stopPoll.setChatId(String.valueOf(chatId));
             stopPoll.setMessageId(messageId);
-            try { execute(stopPoll); } catch (TelegramApiException e) { log.error("Ошибка остановки опроса", e); }
+            try {
+                execute(stopPoll);
+            } catch (TelegramApiException e) {
+                log.error("Ошибка остановки опроса", e);
+            }
         }
         pollMessageIds.clear();
 
@@ -337,10 +341,11 @@ public class LunchBot extends TelegramLongPollingBot {
                 String category = pollCategories.getOrDefault(pollId, "").toLowerCase();
 
                 for (String dish : pollEntry.getValue()) {
-                    if (category.contains("перв")) firsts.add(dish);
-                    else if (category.contains("втор")) seconds.add(dish);
-                    else if (category.contains("салат")) salads.add(dish);
-                    else if (category.contains("напит") || category.contains("домашн") || category.contains("прохлад")) drinks.add(dish);
+                    if (category.contains("перв") && category.contains("не входит в комп")) firsts.add(dish);
+                    else if (category.contains("втор") && category.contains("не входит в комп")) seconds.add(dish);
+                    else if (category.contains("салат") && category.contains("не входит в комп")) salads.add(dish);
+                    else if ((category.contains("напит") || category.contains("домашн") || category.contains("прохлад"))
+                            && category.contains("не входит в комп")) drinks.add(dish);
                     else others.add(dish);
                 }
             }
@@ -364,11 +369,26 @@ public class LunchBot extends TelegramLongPollingBot {
             }
 
             // Распределяем оставшиеся блюда (заказанные отдельно) и плюсуем их цену
-            for (int i = comboCount; i < firsts.size(); i++) { regularCounts.merge(firsts.get(i), 1, Integer::sum); userSum += extractPrice(firsts.get(i)); }
-            for (int i = comboCount; i < seconds.size(); i++) { regularCounts.merge(seconds.get(i), 1, Integer::sum); userSum += extractPrice(seconds.get(i)); }
-            for (int i = comboCount; i < salads.size(); i++) { regularCounts.merge(salads.get(i), 1, Integer::sum); userSum += extractPrice(salads.get(i)); }
-            for (int i = comboCount; i < drinks.size(); i++) { regularCounts.merge(drinks.get(i), 1, Integer::sum); userSum += extractPrice(drinks.get(i)); }
-            for (String dish : others) { regularCounts.merge(dish, 1, Integer::sum); userSum += extractPrice(dish); }
+            for (int i = comboCount; i < firsts.size(); i++) {
+                regularCounts.merge(firsts.get(i), 1, Integer::sum);
+                userSum += extractPrice(firsts.get(i));
+            }
+            for (int i = comboCount; i < seconds.size(); i++) {
+                regularCounts.merge(seconds.get(i), 1, Integer::sum);
+                userSum += extractPrice(seconds.get(i));
+            }
+            for (int i = comboCount; i < salads.size(); i++) {
+                regularCounts.merge(salads.get(i), 1, Integer::sum);
+                userSum += extractPrice(salads.get(i));
+            }
+            for (int i = comboCount; i < drinks.size(); i++) {
+                regularCounts.merge(drinks.get(i), 1, Integer::sum);
+                userSum += extractPrice(drinks.get(i));
+            }
+            for (String dish : others) {
+                regularCounts.merge(dish, 1, Integer::sum);
+                userSum += extractPrice(dish);
+            }
 
             // Формируем чек для пользователя
             if (userSum > 0) {
@@ -417,14 +437,22 @@ public class LunchBot extends TelegramLongPollingBot {
         if (activeTopicId != null) {
             kitchenMsg.setMessageThreadId(activeTopicId);
         }
-        try { execute(kitchenMsg); } catch (TelegramApiException e) { log.error("Ошибка отправки заказа", e); }
+        try {
+            execute(kitchenMsg);
+        } catch (TelegramApiException e) {
+            log.error("Ошибка отправки заказа", e);
+        }
 
         SendMessage billingMsg = new SendMessage(String.valueOf(chatId), billingInfo.toString());
         billingMsg.setParseMode("HTML");
         if (activeTopicId != null) {
             billingMsg.setMessageThreadId(activeTopicId);
         }
-        try { execute(billingMsg); } catch (TelegramApiException e) { log.error("Ошибка отправки счета", e); }
+        try {
+            execute(billingMsg);
+        } catch (TelegramApiException e) {
+            log.error("Ошибка отправки счета", e);
+        }
     }
 
     // Вспомогательный метод парсинга цен
