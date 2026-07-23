@@ -341,11 +341,11 @@ public class LunchBot extends TelegramLongPollingBot {
                 String category = pollCategories.getOrDefault(pollId, "").toLowerCase();
 
                 for (String dish : pollEntry.getValue()) {
-                    if (category.contains("перв") && category.contains("не входит в комп")) firsts.add(dish);
-                    else if (category.contains("втор") && category.contains("не входит в комп")) seconds.add(dish);
-                    else if (category.contains("салат") && category.contains("не входит в комп")) salads.add(dish);
+                    if (category.contains("перв") && !category.contains("не входит в комп")) firsts.add(dish);
+                    else if (category.contains("втор") && !category.contains("не входит в комп")) seconds.add(dish);
+                    else if (category.contains("салат") && !category.contains("не входит в комп")) salads.add(dish);
                     else if ((category.contains("напит") || category.contains("домашн") || category.contains("прохлад"))
-                            && category.contains("не входит в комп")) drinks.add(dish);
+                            && !category.contains("не входит в комп")) drinks.add(dish);
                     else others.add(dish);
                 }
             }
